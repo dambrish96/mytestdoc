@@ -1,0 +1,156 @@
+To use a .pfx certificate in a Logic App to send a binary file, you will need to follow these steps:
+
+Upload the .pfx Certificate to Azure Key Vault.
+Create an Azure Function to Handle the File Upload and Certificate Usage.
+Create a Logic App that Integrates with the Azure Function.
+Step 1: Upload the .pfx Certificate to Azure Key Vault
+Create an Azure Key Vault (if you don't already have one):
+
+Go to the Azure Portal.
+Search for and create a new Key Vault.
+Upload the .pfx Certificate to Key Vault:
+
+In your Key Vault, go to the "Certificates" section.
+Click "Generate/Import" to upload your .pfx certificate.
+Store the certificate password as a secret in the Key Vault (optional but recommended for security).
+Step 2: Create an Azure Function to Handle File Upload and Certificate Usage
+Create a new Azure Function App in the Azure Portal.
+
+Develop the Azure Function:
+
+Create a new Azure Function that uses the .pfx certificate to send the binary file.
+Here is an example of how to implement this Azure Function:
+
+Function Code (C#):
+
+csharp
+Copy code
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+public static class FileUploaderFunction
+{
+    [FunctionName("UploadFile")]
+    public static async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        log.LogInformation("C# HTTP trigger function processed a request.");
+
+        string url = req.Query["url"];
+        string fileName = req.Query["fileName"];
+        string fileType = req.Query["fileType"];
+
+        if (string.IsNullOrEmpty(url) || string.IsNullOrEmpty(fileName) || string.IsNullOrEmpty(fileType))
+        {
+            return new BadRequestObjectResult("Please pass a URL, file name, and file type on the query string or in the request body");
+        }
+
+        byte[] fileContent;
+        using (var memoryStream = new MemoryStream())
+        {
+            await req.Body.CopyToAsync(memoryStream);
+            fileContent = memoryStream.ToArray();
+        }
+
+        try
+        {
+            var keyVaultUri = Environment.GetEnvironmentVariable("KeyVaultUri");
+            var certificateName = Environment.GetEnvironmentVariable("CertificateName");
+            var certificatePasswordSecretName = Environment.GetEnvironmentVariable("CertificatePasswordSecretName");
+
+            var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+            var certificateClient = new CertificateClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+
+            KeyVaultSecret passwordSecret = await secretClient.GetSecretAsync(certificatePasswordSecretName);
+            string certificatePassword = passwordSecret.Value;
+
+            KeyVaultCertificateWithPolicy certificateWithPolicy = await certificateClient.GetCertificateAsync(certificateName);
+            var certificate = new X509Certificate2(certificateWithPolicy.Cer, certificatePassword);
+
+            using (var handler = new HttpClientHandler())
+            {
+                handler.ClientCertificates.Add(certificate);
+
+                using (var client = new HttpClient(handler))
+                {
+                    var content = new ByteArrayContent(fileContent);
+                    content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(fileType);
+
+                    var response = await client.PostAsync(url, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return new OkObjectResult("File uploaded successfully.");
+                    }
+                    else
+                    {
+                        return new ObjectResult($"Error: {response.StatusCode}") { StatusCode = (int)response.StatusCode };
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            log.LogError($"Exception: {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+    }
+}
+Step 3: Create a Logic App that Integrates with the Azure Function
+Create a new Logic App in the Azure Portal.
+
+Add a Trigger:
+
+Add a trigger like "When a HTTP request is received".
+Call the Azure Function:
+
+Add a new action and search for "Azure Functions".
+Select your function app and choose the UploadFile function you created.
+Configure the Action:
+
+Pass the necessary parameters (url, fileName, and fileType) to the Azure Function.
+Attach the binary file content in the body of the HTTP request.
+Example JSON for HTTP Trigger in Logic App:
+Here is an example of how to structure the JSON for the HTTP trigger in the Logic App:
+
+json
+Copy code
+{
+    "url": "https://destination-api-endpoint.com/upload",
+    "fileName": "testfile.bin",
+    "fileType": "application/octet-stream"
+}
+Configuring Managed Identity and Key Vault Access:
+Assign a Managed Identity to the Function App:
+
+Go to your Function App in the Azure Portal.
+In the "Identity" section, enable the system-assigned managed identity.
+Grant Key Vault Access to the Managed Identity:
+
+Go to your Key Vault in the Azure Portal.
+In the "Access policies" section, add an access policy.
+Grant the managed identity of your Function App the "Get" and "List" permissions for secrets and certificates.
+Environment Settings in Function App:
+
+In the Function App settings, add the following application settings:
+KeyVaultUri: The URI of your Key Vault (e.g., https://<your-keyvault-name>.vault.azure.net/).
+CertificateName: The name of your certificate in Key Vault.
+CertificatePasswordSecretName: The name of the secret storing the certificate password.
+Conclusion:
+By following these steps, you create a custom Logic App connector that sends a binary file using a PFX certificate. This setup ensures secure communication using SSL certificates for authentication, managed through Azure Key Vault and integrated seamlessly with Azure Functions and Logic Apps.
+
+
+
+
+
