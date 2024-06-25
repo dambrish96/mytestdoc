@@ -1,0 +1,46 @@
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| project TimeGenerated, Resource, Status_s, CallerIpAddress_s, StartTime_t, EndTime_t, WorkflowName_s
+
+
+// Define an array with the names of your Logic Apps
+let logicApps = dynamic([
+    "LogicApp1", "LogicApp2", "LogicApp3", // Add up to 100 Logic App names
+    // ...
+    "LogicApp99", "LogicApp100"
+]);
+
+// Query to fetch logs from AzureDiagnostics for specified Logic Apps
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where WorkflowName_s in (logicApps)
+| project TimeGenerated, Resource, WorkflowName_s, Status_s, CallerIpAddress_s, StartTime_t, EndTime_t
+| order by TimeGenerated desc
+
+
+// Define the time range for monitoring (e.g., the last 24 hours)
+let timeRange = 24h;
+
+// Query to fetch logs from AzureDiagnostics for Logic Apps
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where TimeGenerated >= ago(timeRange)
+| project TimeGenerated, ResourceGroup, Resource, WorkflowName_s, Status_s, CallerIpAddress_s, StartTime_t, EndTime_t, DurationMs_d, OperationName, CorrelationId
+| order by TimeGenerated desc
+
+
+// Define an array with the names of your Logic Apps
+let logicApps = dynamic([
+    "LogicApp1", "LogicApp2", "LogicApp3" // Add your Logic App names here
+]);
+
+// Define the time range for monitoring
+let timeRange = 24h;
+
+// Query to fetch logs from AzureDiagnostics for specified Logic Apps
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where WorkflowName_s in (logicApps)
+| where TimeGenerated >= ago(timeRange)
+| project TimeGenerated, ResourceGroup, Resource, WorkflowName_s, Status_s, CallerIpAddress_s, StartTime_t, EndTime_t, DurationMs_d, OperationName, CorrelationId
+| order by TimeGenerated desc
