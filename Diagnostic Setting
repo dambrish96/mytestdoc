@@ -1,0 +1,99 @@
+Step 1: Set Up Diagnostics for Logic Apps
+Enable Diagnostics:
+For each Logic App, go to Diagnostics settings under Monitoring.
+Click Add diagnostic setting.
+Select Send to Log Analytics and choose your Log Analytics workspace.
+Select all relevant logs (e.g., RunTimeStatus, AllMetrics).
+Save the settings.
+Step 2: Create Log Analytics Queries for Monitoring
+Navigate to Log Analytics Workspace:
+
+Open the Azure Portal and go to your Log Analytics Workspace.
+Click on Logs.
+Write the KQL Query:
+
+kusto
+Copy code
+let logicApps = dynamic([
+    "LogicApp1", "LogicApp2", "LogicApp3", // Add all 100 Logic Apps here
+    "LogicApp99", "LogicApp100"
+]);
+let timeRange = 24h; // Adjust as needed
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where WorkflowName_s in (logicApps)
+| where TimeGenerated >= ago(timeRange)
+| project TimeGenerated, ResourceGroup, Resource, WorkflowName_s, Status_s, CallerIpAddress_s, StartTime_t, EndTime_t, DurationMs_d, OperationName, CorrelationId
+| order by TimeGenerated desc
+Step 3: Create a Failure-Handling Logic App
+Create the Logic App:
+
+Create a new Logic App in the Azure Portal.
+Design it to handle failures, e.g., by sending notifications, logging additional details, or performing corrective actions.
+Create an HTTP Trigger:
+
+Add an HTTP trigger that can receive failure details.
+Process Failure Data:
+
+Add actions to process the failure data, such as sending an email, logging to a database, or triggering other workflows.
+Step 4: Set Up Alerts and Action Groups
+Create Alerts in Log Analytics:
+
+Go to your Log Analytics Workspace and click on Alerts.
+Click + New alert rule.
+Define the condition using a custom log search. For example:
+kusto
+Copy code
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where Status_s == "Failed"
+| summarize count() by WorkflowName_s, bin(TimeGenerated, 5m)
+Create an Action Group:
+
+Create an Action Group to invoke the failure-handling Logic App.
+In the Action Group, add an action of type Logic App.
+Select the failure-handling Logic App you created.
+Link the Alert to the Action Group:
+
+Configure the alert to use the Action Group.
+Set the alert logic to trigger when failures occur.
+Step 5: Create and Customize Azure Dashboard
+Create a New Dashboard:
+
+In the Azure Portal, click on Dashboard and then + New dashboard.
+Add Log Analytics Tiles:
+
+Click + Add and select Tile Gallery.
+Choose Log Analytics and configure tiles with queries to monitor your Logic Apps. For example, add tiles showing:
+Recent failures.
+Total runs and successes.
+Average duration of runs.
+Add Alerts and Failure Monitoring:
+
+Add a tile that shows active alerts.
+Optionally, add tiles to visualize metrics from the failure-handling Logic App.
+Example KQL Queries for Dashboard Tiles
+Recent Failures:
+
+kusto
+Copy code
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| where Status_s == "Failed"
+| project TimeGenerated, Resource, WorkflowName_s, Status_s, StartTime_t, EndTime_t, DurationMs_d, CorrelationId
+| order by TimeGenerated desc
+Total Runs and Successes:
+
+kusto
+Copy code
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| summarize totalRuns = count(), totalSuccess = countif(Status_s == "Succeeded") by WorkflowName_s
+Average Duration of Runs:
+
+kusto
+Copy code
+AzureDiagnostics
+| where ResourceType == "MICROSOFT.LOGIC/WORKFLOWS"
+| summarize avgDuration = avg(DurationMs_d) by WorkflowName_s
+By implementing these steps, you will have a robust monitoring solution for 100 Logic Apps, with failure handling through a dedicated Logic App, and visual insights through an Azure Dashboard.
