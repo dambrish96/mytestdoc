@@ -10,3 +10,29 @@ LogicAppWorkflowRuntime
 LogicAppWorkflowRuntime
 | where RetryHistory != ""
 | sort by StartTime desc
+
+
+
+Logic App Management
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where OperationName == "Microsoft.Logic/workflows/workflowRunCompleted"
+| join kind = rightouter
+(
+    AzureDiagnostics
+    | where Category == "WorkflowRuntime"
+    | where OperationName == "Microsoft.Logic/workflows/workflowRunStarted"
+    | where resource_runId_s in (( AzureDiagnostics
+    | where Category == "WorkflowRuntime"
+    | where OperationName == "Microsoft.Logic/workflows/workflowTriggerCompleted"
+    | project resource_runId_s ))
+    | project WorkflowStartStatus=status_s, WorkflowNameFromInnerQuery=resource_workflowName_s, WorkflowIdFromInnerQuery=workflowId_s, resource_runId_s
+)
+on resource_runId_s
+| extend WorkflowStatus=iff(isnotempty(status_s), status_s, WorkflowStartStatus)
+| extend WorkflowName=iff(isnotempty(resource_workflowName_s), resource_workflowName_s, WorkflowNameFromInnerQuery)
+| extend WorkflowId=iff(isnotempty(workflowId_s), workflowId_s, WorkflowIdFromInnerQuery)
+| summarize Count=count() by WorkflowId, WorkflowName, WorkflowStatus
+
+https://draith.azurewebsites.net/?p=572
+https://github.com/scautomation/LogicApps-AzureMonitor-Workbook/tree/master?tab=readme-ov-file
