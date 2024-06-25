@@ -1,0 +1,12 @@
+LogicAppWorkflowRuntime
+| where RunId == "08585258189921908774209033046CU00"
+
+
+LogicAppWorkflowRuntime
+| where Error != ""
+| sort by StartTime desc
+
+
+LogicAppWorkflowRuntime
+| where RetryHistory != ""
+| sort by StartTime desc
