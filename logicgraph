@@ -1,0 +1,639 @@
+To get the parent folder name from Outlook using Microsoft Graph in a Logic App, follow these steps:
+
+Prerequisites
+Azure Subscription: Ensure you have an active Azure subscription.
+Microsoft Graph API: Ensure you have registered an application in Azure AD to use Microsoft Graph API and have the necessary permissions (e.g., Mail.Read).
+Steps
+Create a Logic App:
+
+Go to the Azure Portal.
+Search for "Logic Apps" and create a new Logic App.
+Design the Logic App Workflow:
+
+Trigger: Start with a trigger like "When a new email arrives in the inbox".
+Action: Add an HTTP action to call the Microsoft Graph API.
+Get the Email Details:
+
+Use the trigger to get details of the email, including its unique identifier.
+Get the Parent Folder:
+
+Use the Microsoft Graph API to get the parent folder of the email.
+Here's how you can set this up:
+
+Step-by-Step Guide
+Trigger - When a new email arrives in the inbox:
+
+Search for "Outlook" and select the trigger "When a new email arrives (V3)".
+Action - Get Message Details:
+
+Add an HTTP action to get the message details using Microsoft Graph API.
+HTTP Action Configuration:
+
+Configure the HTTP action to call the Microsoft Graph API endpoint for the email's parent folder.
+Here's the detailed configuration:
+
+HTTP Action
+Method: GET
+URI: https://graph.microsoft.com/v1.0/me/messages/{MessageId}/parentFolder
+Headers:
+Authorization: Bearer {YourAccessToken}
+Replace {MessageId} with the dynamic content from the trigger and {YourAccessToken} with the access token obtained from the OAuth2 authentication.
+
+Example Logic App Workflow
+json
+Copy code
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "HTTP": {
+                "inputs": {
+                    "headers": {
+                        "Authorization": "Bearer {YourAccessToken}"
+                    },
+                    "method": "GET",
+                    "uri": "https://graph.microsoft.com/v1.0/me/messages/@{triggerOutputs()?['body/Id']}/parentFolder"
+                },
+                "runAfter": {},
+                "type": "Http"
+            },
+            "Parse_JSON": {
+                "inputs": {
+                    "content": "@body('HTTP')",
+                    "schema": {
+                        "properties": {
+                            "displayName": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {
+                    "HTTP": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Response": {
+                "inputs": {
+                    "body": {
+                        "ParentFolderName": "@outputs('Parse_JSON')?['displayName']"
+                    },
+                    "statusCode": 200
+                },
+                "runAfter": {
+                    "Parse_JSON": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "triggers": {
+            "When_a_new_email_arrives_(V3)": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['office365']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/Mail/OnNewEmail",
+                    "queries": {
+                        "folder": "inbox"
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "splitOn": "@triggerOutputs()?['headers']['x-ms-trigger-spliton-message-id']",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "defaultValue": {},
+            "type": "Object"
+        }
+    }
+}
+Important Notes
+Authentication: Ensure you have set up OAuth2 authentication for Microsoft Graph API in your Logic App.
+Permissions: Ensure your application has the necessary permissions to access email and folder details.
+By following these steps, you can create a Logic App that retrieves the parent folder name of an email using the Microsoft Graph API.
+
+get response like {
+            "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAeUO-fAAA=",
+            "displayName": "Conversation History",
+            "parentFolderId": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAEIAAA=",
+			"parentFoldeName":"inbox"
+            "childFolderCount": 1,
+            "unreadItemCount": 0,
+            "totalItemCount": 0,
+            "sizeInBytes": 0,
+            "isHidden": false
+        },
+        {
+            "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAEKAAA=",
+            "displayName": "Impotant",
+            "parentFolderId": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAEIAAA=",
+            "parentFoldeName":"inbox/Ambrish"
+			"childFolderCount": 0,
+            "unreadItemCount": 0,
+            "totalItemCount": 0,
+            "sizeInBytes": 0,
+            "isHidden": false
+        }
+ChatGPT
+To achieve the desired response format using Microsoft Graph API in a Logic App, you need to perform the following steps:
+
+Create the Logic App: Follow the steps to create a new Logic App as described previously.
+Get the Parent Folder Details: Use Microsoft Graph API to retrieve details of the parent folder, including the parent folder name.
+Detailed Steps:
+Create a Logic App with the required trigger:
+
+Use the "When a new email arrives in the inbox" trigger as described previously.
+Add HTTP Action to get the Parent Folder Details:
+
+Configure the HTTP action to call the Microsoft Graph API endpoint for the email's parent folder.
+Parse the Parent Folder Details:
+
+Parse the response to extract the required fields, including displayName, parentFolderId, and parentFolderName.
+Construct the Response:
+
+Create the desired JSON response using a Compose action.
+Example Logic App Workflow
+Here's an example of how you can set up the Logic App to achieve the required response format:
+
+Logic App Workflow
+json
+Copy code
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "HTTP_GetParentFolder": {
+                "inputs": {
+                    "headers": {
+                        "Authorization": "Bearer {YourAccessToken}"
+                    },
+                    "method": "GET",
+                    "uri": "https://graph.microsoft.com/v1.0/me/messages/@{triggerOutputs()?['body/Id']}/parentFolder"
+                },
+                "runAfter": {},
+                "type": "Http"
+            },
+            "Parse_JSON_GetParentFolder": {
+                "inputs": {
+                    "content": "@body('HTTP_GetParentFolder')",
+                    "schema": {
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "displayName": {
+                                "type": "string"
+                            },
+                            "parentFolderId": {
+                                "type": "string"
+                            },
+                            "childFolderCount": {
+                                "type": "integer"
+                            },
+                            "unreadItemCount": {
+                                "type": "integer"
+                            },
+                            "totalItemCount": {
+                                "type": "integer"
+                            },
+                            "sizeInBytes": {
+                                "type": "integer"
+                            },
+                            "isHidden": {
+                                "type": "boolean"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "runAfter": {
+                    "HTTP_GetParentFolder": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Compose_Response": {
+                "inputs": {
+                    "id": "@triggerOutputs()?['body/Id']",
+                    "displayName": "@outputs('Parse_JSON_GetParentFolder')?['displayName']",
+                    "parentFolderId": "@outputs('Parse_JSON_GetParentFolder')?['parentFolderId']",
+                    "parentFoldeName": "@{triggerOutputs()?['body/parentFolderId']}",
+                    "childFolderCount": "@outputs('Parse_JSON_GetParentFolder')?['childFolderCount']",
+                    "unreadItemCount": "@outputs('Parse_JSON_GetParentFolder')?['unreadItemCount']",
+                    "totalItemCount": "@outputs('Parse_JSON_GetParentFolder')?['totalItemCount']",
+                    "sizeInBytes": "@outputs('Parse_JSON_GetParentFolder')?['sizeInBytes']",
+                    "isHidden": "@outputs('Parse_JSON_GetParentFolder')?['isHidden']"
+                },
+                "runAfter": {
+                    "Parse_JSON_GetParentFolder": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose"
+            },
+            "Response": {
+                "inputs": {
+                    "body": "@outputs('Compose_Response')",
+                    "statusCode": 200
+                },
+                "runAfter": {
+                    "Compose_Response": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "triggers": {
+            "When_a_new_email_arrives_(V3)": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['office365']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/Mail/OnNewEmail",
+                    "queries": {
+                        "folder": "inbox"
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "splitOn": "@triggerOutputs()?['headers']['x-ms-trigger-spliton-message-id']",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "defaultValue": {},
+            "type": "Object"
+        }
+    }
+}
+Explanation:
+Trigger: The Logic App is triggered when a new email arrives in the inbox.
+HTTP Action: This action calls the Microsoft Graph API to get the parent folder details of the email.
+Parse JSON Action: This action parses the JSON response from the HTTP action to extract the required fields.
+Compose Action: This action constructs the desired JSON response.
+Response Action: This action sends the constructed JSON response.
+Access Token
+Make sure you replace {YourAccessToken} with a valid access token obtained through OAuth2 authentication.
+
+By following these steps, you can set up a Logic App to retrieve the parent folder details and return a JSON response in the desired format using the Microsoft Graph API.
+
+provide me detailed steps to work with logic app 
+ChatGPT
+Sure, I'll provide you with detailed steps to create a Logic App that retrieves the parent folder name of an email from Outlook using the Microsoft Graph API.
+
+Step-by-Step Guide
+Prerequisites
+Azure Subscription: Ensure you have an active Azure subscription.
+Microsoft Graph API Application: Register an application in Azure AD and grant the necessary permissions (Mail.Read).
+1. Register an Application in Azure AD
+Go to the Azure Portal.
+Navigate to Azure Active Directory > App registrations.
+Click on New registration.
+Fill in the registration details:
+Name: Your application name.
+Supported account types: Select according to your needs (e.g., Single tenant).
+Redirect URI: Set this to https://global.consent.azure-apim.net/redirect for Logic Apps.
+Click Register.
+2. Configure API Permissions
+In the app registration page, go to API permissions.
+Click Add a permission.
+Select Microsoft Graph.
+Choose Delegated permissions.
+Select Mail.Read.
+Click Add permissions.
+Grant admin consent for the permissions.
+3. Generate a Client Secret
+Go to Certificates & secrets in your app registration.
+Click New client secret.
+Add a description and set an expiration period.
+Click Add.
+Copy the client secret value and save it securely.
+4. Create a Logic App
+Go to the Azure Portal.
+Search for Logic Apps and click Add.
+Fill in the necessary details:
+Name: Your Logic App name.
+Resource Group: Select an existing resource group or create a new one.
+Location: Choose the appropriate location.
+Click Review + create, then Create.
+5. Design the Logic App Workflow
+In the Logic App designer, start with the When a new email arrives (V3) trigger:
+
+Search for Outlook and select the trigger.
+Sign in and authenticate with your Outlook account.
+Set the parameters (e.g., folder to Inbox).
+Add an HTTP action to get the parent folder details:
+
+Click New step, search for HTTP, and select it.
+Configure the HTTP action:
+Method: GET
+URI: https://graph.microsoft.com/v1.0/me/messages/@{triggerOutputs()?['body/Id']}/parentFolder
+Headers:
+Authorization: Bearer {YourAccessToken} (You'll replace this with the token obtained via OAuth2)
+Add a Parse JSON action to extract details:
+
+Click New step, search for Parse JSON, and select it.
+Configure the Parse JSON action:
+Content: @body('HTTP')
+Schema:
+json
+Copy code
+{
+  "properties": {
+    "id": { "type": "string" },
+    "displayName": { "type": "string" },
+    "parentFolderId": { "type": "string" },
+    "childFolderCount": { "type": "integer" },
+    "unreadItemCount": { "type": "integer" },
+    "totalItemCount": { "type": "integer" },
+    "sizeInBytes": { "type": "integer" },
+    "isHidden": { "type": "boolean" }
+  },
+  "type": "object"
+}
+Add a Compose action to create the response:
+
+Click New step, search for Compose, and select it.
+Configure the Compose action:
+Inputs:
+json
+Copy code
+{
+  "id": "@triggerOutputs()?['body/Id']",
+  "displayName": "@outputs('Parse_JSON')?['displayName']",
+  "parentFolderId": "@outputs('Parse_JSON')?['parentFolderId']",
+  "parentFolderName": "@{triggerOutputs()?['body/parentFolderId']}",
+  "childFolderCount": "@outputs('Parse_JSON')?['childFolderCount']",
+  "unreadItemCount": "@outputs('Parse_JSON')?['unreadItemCount']",
+  "totalItemCount": "@outputs('Parse_JSON')?['totalItemCount']",
+  "sizeInBytes": "@outputs('Parse_JSON')?['sizeInBytes']",
+  "isHidden": "@outputs('Parse_JSON')?['isHidden']"
+}
+Add a Response action to send the result:
+
+Click New step, search for Response, and select it.
+Configure the Response action:
+Status code: 200
+Body: @outputs('Compose')
+6. Authenticate and Get Access Token
+You need to authenticate and get an access token to call the Microsoft Graph API. You can use a tool like Postman to get the access token or implement an OAuth2 authentication flow in your Logic App.
+
+7. Test the Logic App
+Save the Logic App.
+Send an email to the inbox you configured in the trigger.
+Monitor the Logic App run to ensure it processes the email and retrieves the parent folder details correctly.
+Notes
+Ensure you replace {YourAccessToken} in the HTTP action with a valid access token.
+Ensure the Logic App has the necessary permissions to access the email and folder details.
+By following these detailed steps, you can create a Logic App that retrieves the parent folder name of an email from Outlook using the Microsoft Graph API.
+
+using endpoint https://graph.microsoft.com/v1.0/me/mailFolders provide me details steps 
+ChatGPT
+To create a Logic App that retrieves the parent folder details from the https://graph.microsoft.com/v1.0/me/mailFolders endpoint, follow these steps:
+
+Prerequisites
+Azure Subscription: Ensure you have an active Azure subscription.
+Microsoft Graph API Application: Register an application in Azure AD and grant the necessary permissions (Mail.Read).
+Step-by-Step Guide
+1. Register an Application in Azure AD
+Register the Application:
+
+Go to the Azure Portal.
+Navigate to Azure Active Directory > App registrations.
+Click on New registration.
+Fill in the registration details:
+Name: Your application name.
+Supported account types: Select according to your needs (e.g., Single tenant).
+Redirect URI: Set this to https://global.consent.azure-apim.net/redirect for Logic Apps.
+Click Register.
+Configure API Permissions:
+
+In the app registration page, go to API permissions.
+Click Add a permission.
+Select Microsoft Graph.
+Choose Delegated permissions.
+Select Mail.Read.
+Click Add permissions.
+Grant admin consent for the permissions.
+Generate a Client Secret:
+
+Go to Certificates & secrets in your app registration.
+Click New client secret.
+Add a description and set an expiration period.
+Click Add.
+Copy the client secret value and save it securely.
+2. Create a Logic App
+Create the Logic App:
+
+Go to the Azure Portal.
+Search for Logic Apps and click Add.
+Fill in the necessary details:
+Name: Your Logic App name.
+Resource Group: Select an existing resource group or create a new one.
+Location: Choose the appropriate location.
+Click Review + create, then Create.
+Design the Logic App Workflow:
+
+Trigger - When a new email arrives (V3):
+
+In the Logic App designer, search for Outlook and select the trigger When a new email arrives (V3).
+Sign in and authenticate with your Outlook account.
+Set the parameters (e.g., folder to Inbox).
+Action - Get Parent Folder Details:
+
+Add an HTTP action to get the parent folder details.
+Click New step, search for HTTP, and select it.
+Configure the HTTP action:
+Method: GET
+URI: https://graph.microsoft.com/v1.0/me/mailFolders
+Headers:
+Authorization: Bearer {YourAccessToken} (You'll replace this with the token obtained via OAuth2)
+Parse JSON Action:
+
+Add a Parse JSON action to extract details.
+Click New step, search for Parse JSON, and select it.
+Configure the Parse JSON action:
+Content: @body('HTTP')
+Schema:
+json
+Copy code
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "displayName": { "type": "string" },
+          "parentFolderId": { "type": "string" },
+          "childFolderCount": { "type": "integer" },
+          "unreadItemCount": { "type": "integer" },
+          "totalItemCount": { "type": "integer" },
+          "sizeInBytes": { "type": "integer" },
+          "isHidden": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}
+Compose Action:
+
+Add a Compose action to create the response.
+Click New step, search for Compose, and select it.
+Configure the Compose action:
+Inputs:
+json
+Copy code
+{
+  "folders": "@outputs('Parse_JSON')?['value']"
+}
+Response Action:
+
+Add a Response action to send the result.
+Click New step, search for Response, and select it.
+Configure the Response action:
+Status code: 200
+Body: @outputs('Compose')
+3. Authenticate and Get Access Token
+You need to authenticate and get an access token to call the Microsoft Graph API. You can use a tool like Postman to get the access token or implement an OAuth2 authentication flow in your Logic App.
+
+4. Test the Logic App
+Save the Logic App.
+Send an Email to the inbox you configured in the trigger.
+Monitor the Logic App run to ensure it processes the email and retrieves the parent folder details correctly.
+Sample Logic App Workflow JSON
+Here's an example of the complete Logic App workflow JSON:
+
+json
+Copy code
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "HTTP_GetParentFolder": {
+                "inputs": {
+                    "headers": {
+                        "Authorization": "Bearer {YourAccessToken}"
+                    },
+                    "method": "GET",
+                    "uri": "https://graph.microsoft.com/v1.0/me/mailFolders"
+                },
+                "runAfter": {},
+                "type": "Http"
+            },
+            "Parse_JSON_GetParentFolder": {
+                "inputs": {
+                    "content": "@body('HTTP_GetParentFolder')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": { "type": "string" },
+                                        "displayName": { "type": "string" },
+                                        "parentFolderId": { "type": "string" },
+                                        "childFolderCount": { "type": "integer" },
+                                        "unreadItemCount": { "type": "integer" },
+                                        "totalItemCount": { "type": "integer" },
+                                        "sizeInBytes": { "type": "integer" },
+                                        "isHidden": { "type": "boolean" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "HTTP_GetParentFolder": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson"
+            },
+            "Compose_Response": {
+                "inputs": {
+                    "folders": "@outputs('Parse_JSON_GetParentFolder')?['value']"
+                },
+                "runAfter": {
+                    "Parse_JSON_GetParentFolder": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Compose"
+            },
+            "Response": {
+                "inputs": {
+                    "body": "@outputs('Compose_Response')",
+                    "statusCode": 200
+                },
+                "runAfter": {
+                    "Compose_Response": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "triggers": {
+            "When_a_new_email_arrives_(V3)": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['office365']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/Mail/OnNewEmail",
+                    "queries": {
+                        "folder": "inbox"
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "splitOn": "@triggerOutputs()?['headers']['x-ms-trigger-spliton-message-id']",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "defaultValue": {},
+            "type": "Object"
+        }
+    }
+}
+Important Notes
+Authentication: Ensure you have set up OAuth2 authentication for Microsoft Graph API in your Logic App.
+Permissions: Ensure your application has the necessary permissions to access email and folder details.
+Access Token: Replace {YourAccessToken} in the HTTP action with a valid access token obtained through OAuth2 authentication.
+By following these steps, you can create a Logic App that retrieves the parent folder details of an email from Outlook using the Microsoft Graph API and returns the desired response format.
