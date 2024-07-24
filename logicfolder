@@ -1,0 +1,176 @@
+Certainly! If you need a response that lists each folder along with its parent folder name, you can use the following format to display the information:
+
+Folder Name: Inbox
+Parent Folder Name: Mail
+ 
+Folder Name: Drafts
+Parent Folder Name: Mail
+ 
+Folder Name: Sent Items
+Parent Folder Name: Mail
+ 
+... and so on for each folder.
+To achieve this in your Logic App using Microsoft Graph, you would:
+
+List all mail folders to get their IDs and names.
+For each folder, make a request to get its parent folder details using the folder ID.
+Extract the parent folder’s display name from the response.
+Format the output to list the folder names with their respective parent folder names.
+Here’s a simplified example of how you might structure your Logic App’s workflow to achieve this:
+
+JSON
+
+"actions": {
+    "List_folders": {
+        "type": "Http",
+        "inputs": {
+            "method": "GET",
+            "uri": https://graph.microsoft.com/v1.0/me/mailFolders,
+            "headers": {
+                "Authorization": "Bearer your_access_token"
+            }
+        }
+    },
+    "For_each_folder": {
+        "foreach": "@body('List_folders')?['value']",
+        "actions": {
+            "Get_parent_folder_details": {
+                "type": "Http",
+                "inputs": {
+                    "method": "GET",
+                    "uri": https://graph.microsoft.com/v1.0/me/mailFolders/@{items('For_each_folder')?['parentFolderId']},
+                    "headers": {
+                        "Authorization": "Bearer your_access_token"
+                    }
+                }
+            },
+            "Format_output": {
+                "type": "Compose",
+                "inputs": {
+                    "Folder Name": "@{items('For_each_folder')?['displayName']}",
+                    "Parent Folder Name": "@body('Get_parent_folder_details')?['displayName']"
+                }
+            }
+        }
+    }
+}
+AI-generated code. Review and use carefully. More info on FAQ.
+
+In this example, replace your_access_token with the actual access token. The List_folders action retrieves all folders, and the For_each_folder loop gets the details of each folder’s parent and formats the output accordingly.
+
+Please note that this is a simplified example and you may need to adjust it based on your specific requirements and the structure of your Logic App.
+
+4of30responses
+
+You
+
+Sent by you:
+Can you provide a complete example of the Logic App workflow for this task?
+
+Copilot
+
+Sent by Copilot:
+Certainly! Below is a complete example of an Azure Logic App workflow that lists each Outlook mail folder along with its parent folder name using Microsoft Graph:
+
+JSON
+
+{
+    "definition": {
+        "$schema": https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#,
+        "actions": {
+            "Initialize_variable": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "FolderDetails",
+                            "type": "array",
+                            "value": []
+                        }
+                    ]
+                },
+                "runAfter": {},
+                "type": "InitializeVariable"
+            },
+            "List_mail_folders": {
+                "inputs": {
+                    "method": "GET",
+                    "uri": https://graph.microsoft.com/v1.0/me/mailFolders,
+                    "headers": {
+                        "Authorization": "Bearer your_access_token"
+                    }
+                },
+                "runAfter": {
+                    "Initialize_variable": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Http"
+            },
+            "For_each_folder": {
+                "actions": {
+                    "Get_parent_folder_details": {
+                        "inputs": {
+                            "method": "GET",
+                            "uri": https://graph.microsoft.com/v1.0/me/mailFolders/@{items('For_each_folder')?['parentFolderId']},
+                            "headers": {
+                                "Authorization": "Bearer your_access_token"
+                            }
+                        },
+                        "runAfter": {},
+                        "type": "Http"
+                    },
+                    "Append_to_array_variable": {
+                        "inputs": {
+                            "name": "FolderDetails",
+                            "value": {
+                                "Folder Name": "@{items('For_each_folder')?['displayName']}",
+                                "Parent Folder ID": "@{items('For_each_folder')?['parentFolderId']}",
+                                "Parent Folder Name": "@body('Get_parent_folder_details')?['displayName']"
+                            }
+                        },
+                        "runAfter": {
+                            "Get_parent_folder_details": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "AppendToArrayVariable"
+                    }
+                },
+                "foreach": "@body('List_mail_folders')?['value']",
+                "runAfter": {
+                    "List_mail_folders": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {},
+        "triggers": {
+            "manual": {
+                "inputs": {
+                    "schema": {}
+                },
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    },
+    "parameters": {}
+}
+AI-generated code. Review and use carefully. More info on FAQ.
+
+In this workflow:
+
+The Initialize_variable action creates an array variable to store the folder details.
+The List_mail_folders action retrieves all mail folders.
+The For_each_folder loop iterates over each folder, gets the parent folder details, and appends the information to the array variable.
+Make sure to replace your_access_token with the actual access token you’ve obtained for authenticating with Microsoft Graph.
+
+This is a template and may require adjustments to fit your specific scenario, such as handling pagination if there are many folders, or adding error handling for robustness. Additionally, you’ll need to set up the appropriate OAuth 2.0 authorization flow to obtain the access_token for Microsoft Graph API requests. For more information on setting up authentication, you can refer to the Microsoft Graph authentication documentation.
+
+Please note that this example assumes that you have the necessary permissions to list and retrieve mail folder details via Microsoft Graph. If you encounter any issues with permissions, you may need to adjust the scopes in your Azure app registration.
+
+ 
