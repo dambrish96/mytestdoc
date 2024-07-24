@@ -1,0 +1,377 @@
+Sure, here are the detailed steps to create a Logic App that retrieves mail folders along with their parent folder names using the Microsoft Graph API:
+
+Prerequisites
+Azure Subscription: You need an active Azure subscription.
+Azure AD App Registration: You need to register an application in Azure Active Directory to obtain the client_id, client_secret, and configure permissions.
+Step 1: Register an Application in Azure AD
+Register the App:
+
+Go to the Azure portal and navigate to "Azure Active Directory".
+Click on "App registrations" and then "New registration".
+Provide a name for your app (e.g., "LogicAppGraphAPI").
+Set the "Supported account types" to your preference.
+Redirect URI can be left blank for this example.
+Click "Register".
+Configure API Permissions:
+
+Go to the "API permissions" section of your registered app.
+Click on "Add a permission" and choose "Microsoft Graph".
+Select "Delegated permissions" and add Mail.Read.
+Click "Add permissions".
+Create a Client Secret:
+
+Go to the "Certificates & secrets" section.
+Click "New client secret" and provide a description.
+Set an expiration period and click "Add".
+Copy the client secret value and save it securely (you won't be able to view it again).
+Copy Application (client) ID and Directory (tenant) ID:
+
+Go to the "Overview" section of your registered app.
+Copy the "Application (client) ID" and "Directory (tenant) ID" and save them.
+Step 2: Obtain Access Token Using OAuth 2.0
+To call the Microsoft Graph API, you need an access token. Here’s how you can obtain it using the client credentials flow:
+
+Use a tool like Postman or create a script to obtain the token.
+
+Make a POST request to:
+
+bash
+Copy code
+https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+Replace {tenant} with your Directory (tenant) ID.
+Headers:
+
+bash
+Copy code
+Content-Type: application/x-www-form-urlencoded
+Body (x-www-form-urlencoded):
+
+makefile
+Copy code
+grant_type=client_credentials
+client_id={client_id}
+client_secret={client_secret}
+scope=https://graph.microsoft.com/.default
+Replace {client_id} and {client_secret} with your Azure AD app values.
+Extract the Access Token:
+
+The response will contain an access token. Copy this token for use in the Logic App HTTP action.
+Example Postman Request to Obtain Access Token
+http
+Copy code
+POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&
+client_id={client_id}&
+client_secret={client_secret}&
+scope=https://graph.microsoft.com/.default
+Step 3: Create the Logic App in Azure
+Create a Logic App:
+
+Go to the Azure portal and navigate to "Logic Apps".
+Click "Add" to create a new Logic App.
+Fill in the required details (name, resource group, region, etc.).
+Click "Review + create" and then "Create".
+Open Logic App Designer:
+
+Once the Logic App is created, go to its resource page.
+Click on "Logic App Designer".
+Step 4: Add a Trigger to the Logic App
+Choose a Trigger:
+
+In the Logic App Designer, click on "When a HTTP request is received".
+This will allow the Logic App to be triggered via an HTTP request.
+Set up the Trigger:
+
+Copy the generated HTTP POST URL for later use.
+Optionally, define a sample JSON schema for the incoming request if needed.
+Step 5: Add HTTP Action to Call Microsoft Graph API
+Add an HTTP Action:
+
+Click on "New step" and search for "HTTP".
+Select the HTTP action.
+Configure the HTTP Action:
+
+Method: GET
+URI: https://graph.microsoft.com/v1.0/users/{userId}/mailFolders/delta
+Replace {userId} with the user ID or email.
+Headers:
+json
+Copy code
+{
+  "Authorization": "Bearer {access_token}"
+}
+Replace {access_token} with the token obtained earlier.
+Step 6: Add an Action to Parse the JSON Response
+Add Parse JSON Action:
+
+Click on "New step" and search for "Parse JSON".
+Select the "Parse JSON" action.
+Configure Parse JSON Action:
+
+Content: Add the body from the HTTP response (use dynamic content).
+Schema: Provide the JSON schema for the response. You can generate this schema by pasting a sample JSON response from the Microsoft Graph API.
+Step 7: Add an Action to Initialize a Variable
+Add an Action to Initialize a Variable:
+Click on "New step" and search for "Initialize variable".
+Name the variable (e.g., Folders).
+Set the type to Array.
+Leave the value empty.
+Step 8: Add an Action to Append to the Array Variable
+Add an Action to Append to Array Variable:
+Click on "New step" and search for "Append to array variable".
+Select the variable you just initialized.
+In the "Value" field, use the following expression to extract the folder names and parent folder names:
+json
+Copy code
+{
+  "folderName": item()['displayName'],
+  "parentFolderName": item()['parentFolderId']
+}
+Step 9: Add a Response Action
+Add Response Action:
+
+Click on "New step" and search for "Response".
+Select the "Response" action.
+Configure the Response Action:
+
+Status code: 200
+Body: Add the array variable that contains the folder information (use dynamic content).
+Complete Logic App Workflow
+Here is a summary of the Logic App workflow:
+
+When a HTTP request is received (trigger)
+HTTP (action to call Microsoft Graph API)
+Method: GET
+URI: https://graph.microsoft.com/v1.0/users/{userId}/mailFolders/delta
+Headers: Authorization: Bearer {access_token}
+Parse JSON (action to parse the response)
+Content: Body from HTTP action
+Schema: Provide the JSON schema
+Initialize variable (action to store folder information)
+Name: Folders
+Type: Array
+Append to array variable (action to extract and store folder names and parent folder names)
+Name: Folders
+Value: { "folderName": item()['displayName'], "parentFolderName": item()['parentFolderId'] }
+Response (action to return the folder information)
+Status code: 200
+Body: Array variable Folders
+By following these detailed steps, you should be able to create a Logic App that retrieves mail folders and their parent folder names from Outlook using the Microsoft Graph API and returns the data in the specified JSON format.
+
+
+
+
+
+
+Provid me detailed JSON file for logic app
+ChatGPT
+Sure! Below is a detailed JSON template for the Logic App that retrieves mail folders and their parent folder names using the Microsoft Graph API. This template includes steps for HTTP request trigger, calling the Graph API, parsing the JSON response, and formatting the response.
+
+JSON Template for Logic App
+json
+Copy code
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "HTTP": {
+        "inputs": {
+          "headers": {
+            "Authorization": "Bearer <your-access-token>"
+          },
+          "method": "GET",
+          "uri": "https://graph.microsoft.com/v1.0/users/{userId}/mailFolders/delta"
+        },
+        "runAfter": {},
+        "type": "Http"
+      },
+      "Initialize_variable": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "Folders",
+              "type": "Array",
+              "value": []
+            }
+          ]
+        },
+        "runAfter": {},
+        "type": "InitializeVariable"
+      },
+      "Parse_JSON": {
+        "inputs": {
+          "content": "@body('HTTP')",
+          "schema": {
+            "properties": {
+              "@odata.context": {
+                "type": "string"
+              },
+              "value": {
+                "items": {
+                  "properties": {
+                    "childFolderCount": {
+                      "type": "integer"
+                    },
+                    "displayName": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "isHidden": {
+                      "type": "boolean"
+                    },
+                    "parentFolderId": {
+                      "type": "string"
+                    },
+                    "sizeInBytes": {
+                      "type": "integer"
+                    },
+                    "totalItemCount": {
+                      "type": "integer"
+                    },
+                    "unreadItemCount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "displayName",
+                    "parentFolderId"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "runAfter": {
+          "HTTP": [
+            "Succeeded"
+          ]
+        },
+        "type": "ParseJson"
+      },
+      "Append_to_array_variable": {
+        "inputs": {
+          "name": "Folders",
+          "value": {
+            "folderName": "@items('For_each_folder')['displayName']",
+            "parentFolderName": "@items('For_each_folder')['parentFolderId']"
+          }
+        },
+        "runAfter": {},
+        "type": "AppendToArrayVariable"
+      },
+      "For_each_folder": {
+        "actions": {
+          "Append_to_array_variable": {
+            "inputs": {
+              "name": "Folders",
+              "value": {
+                "folderName": "@items('For_each_folder')['displayName']",
+                "parentFolderName": "@items('For_each_folder')['parentFolderId']"
+              }
+            },
+            "runAfter": {},
+            "type": "AppendToArrayVariable"
+          }
+        },
+        "foreach": "@body('Parse_JSON')['value']",
+        "runAfter": {
+          "Parse_JSON": [
+            "Succeeded"
+          ]
+        },
+        "type": "Foreach"
+      },
+      "Response": {
+        "inputs": {
+          "body": "@variables('Folders')",
+          "statusCode": 200
+        },
+        "runAfter": {
+          "For_each_folder": [
+            "Succeeded"
+          ]
+        },
+        "type": "Response"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "triggers": {
+      "manual": {
+        "inputs": {},
+        "kind": "Http",
+        "type": "Request"
+      }
+    }
+  },
+  "parameters": {}
+}
+Explanation of the JSON Template
+HTTP Trigger:
+
+Type: Request
+Kind: Http
+HTTP Action:
+
+Type: Http
+Method: GET
+URI: https://graph.microsoft.com/v1.0/users/{userId}/mailFolders/delta
+Headers: Contains the authorization header with the Bearer token.
+Initialize Variable:
+
+Type: InitializeVariable
+Name: Folders
+Type: Array
+Value: Empty array to hold the folder information.
+Parse JSON:
+
+Type: ParseJson
+Content: The body of the HTTP response.
+Schema: JSON schema of the expected response from Microsoft Graph API.
+For Each Folder:
+
+Type: Foreach
+Items: The value array from the parsed JSON response.
+Actions:
+Append to Array Variable:
+Type: AppendToArrayVariable
+Name: Folders
+Value: An object containing the folder name and parent folder ID.
+Response Action:
+
+Type: Response
+StatusCode: 200
+Body: The Folders array variable.
+Steps to Use the JSON Template
+Go to your Logic App:
+
+Open your Logic App in the Azure portal.
+Access Logic App Code View:
+
+Click on "Code View" in the Logic App Designer.
+Replace with JSON Template:
+
+Copy and paste the JSON template into the Code View editor.
+Replace Placeholders:
+
+Replace <your-access-token> with the actual access token you obtained.
+Replace {userId} with the actual user ID or email.
+Save and Run:
+
+Save the Logic App.
+Trigger the Logic App using the HTTP POST URL to test and verify the response.
+This JSON template and detailed steps will help you create a Logic App that retrieves mail folders and their parent folder names using the Microsoft Graph API.
+
+
+
+
+
+
