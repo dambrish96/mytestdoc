@@ -1,0 +1,185 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Initialize_Array1": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "Array1",
+                            "type": "Object",
+                            "value": {
+                                "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=": [
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "File Failure",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "runAfter": {},
+                "type": "InitializeVariable"
+            },
+            "Initialize_Array2": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "Array2",
+                            "type": "Object",
+                            "value": {
+                                "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAeUO-fAAA=": [
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "Body Failure",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TjewfjnwejfjbfIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "File Failure",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAujkjnknjkdqx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hkjknqjndjknqwkjndkjn7B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "old",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNlkqdkljkqwhdfh1hf5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 1
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDklkjklklqdnqwjnjdfnqkjnAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "Success",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNCnmkklqmwdknqwldn7B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Initialize_Array1": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
+            "Initialize_OutcomeArray": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "OutcomeArray",
+                            "type": "Object",
+                            "value": {
+                                "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAeUO-fAAA=": [
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "Body Failure",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAuAAAAAAAiQ8W967B7TjewfjnwejfjbfIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "File Failure",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OAAujkjnknjkdqx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hkjknqjndjknqwkjndkjn7B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "old",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNlkqdkljkqwhdfh1hf5OTZhYmY4OAAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 1
+                                    },
+                                    {
+                                        "id": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDklkjklklqdnqwjnjdfnqkjnAuAAAAAAAiQ8W967B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "name": "Success",
+                                        "parentid": "AAMkAGVmMDEzMTM4LTZmYWUtNDdkNCnmkklqmwdknqwldn7B7TKBjgx9rVEURAQAiIsqMbYjsT5e-T7KzowPTAAAAAAFNAAA=",
+                                        "children": 0
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Initialize_Array2": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
+            "For_Each_Item_In_Array2": {
+                "actions": {
+                    "Check_If_Has_Children": {
+                        "actions": {
+                            "Add_Child_Object": {
+                                "inputs": {
+                                    "name": "OutcomeArray",
+                                    "type": "Object",
+                                    "value": {
+                                        "id": "@items('For_Each_Item_In_Array2')['id']",
+                                        "name": "@items('For_Each_Item_In_Array2')['name']",
+                                        "parentid": "@items('For_Each_Item_In_Array2')['parentid']",
+                                        "children": "@items('For_Each_Item_In_Array2')['children']",
+                                        "Child Object": "@variables('Array1')[items('For_Each_Item_In_Array2')['id']]"
+                                    }
+                                },
+                                "runAfter": {},
+                                "type": "AppendToArrayVariable"
+                            },
+                            "Add_Original_Item": {
+                                "inputs": {
+                                    "name": "OutcomeArray",
+                                    "type": "Object",
+                                    "value": {
+                                        "id": "@items('For_Each_Item_In_Array2')['id']",
+                                        "name": "@items('For_Each_Item_In_Array2')['name']",
+                                        "parentid": "@items('For_Each_Item_In_Array2')['parentid']",
+                                        "children": "@items('For_Each_Item_In_Array2')['children']"
+                                    }
+                                },
+                                "runAfter": {},
+                                "type": "AppendToArrayVariable"
+                            }
+                        },
+                        "expression": "@greater(items('For_Each_Item_In_Array2')['children'], 0)",
+                        "runAfter": {},
+                        "type": "If"
+                    }
+                },
+                "inputs": {
+                    "items": "@variables('Array2')"
+                },
+                "runAfter": {
+                    "Initialize_OutcomeArray": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ForEach"
+            },
+            "Output_OutcomeArray": {
+                "inputs": {
+                    "body": "@variables('OutcomeArray')"
+                },
+                "runAfter": {
+                    "For_Each_Item_In_Array2": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Response"
+            }
+        },
+        "triggers": {
+            "manual": {
+                "inputs": {},
+                "kind": "Http",
+                "type": "Request"
+            }
+        }
+    },
+    "kind": "Stateful"
+}
