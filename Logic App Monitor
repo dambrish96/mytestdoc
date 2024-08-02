@@ -1,0 +1,53 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Post_Teams_Message": {
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['teams']['connectionId']"
+                        }
+                    },
+                    "method": "post",
+                    "path": "/v3/conversations",
+                    "body": {
+                        "teamId": "<YOUR_TEAM_ID>",
+                        "channelId": "<YOUR_CHANNEL_ID>",
+                        "message": {
+                            "body": {
+                                "content": "Logic App failed: @actions('Scope')['outputs']['statusMessage']"
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Scope": [
+                        "Failed"
+                    ]
+                },
+                "type": "ApiConnection"
+            },
+            "Scope": {
+                "actions": {
+                    "Your_Action": {
+                        "inputs": {
+                            // Your action inputs here
+                        },
+                        "runAfter": {},
+                        "type": "Your_Action_Type"
+                    }
+                },
+                "runAfter": {},
+                "type": "Scope"
+            }
+        },
+        "triggers": {
+            "manual": {
+                "inputs": {},
+                "type": "Request"
+            }
+        }
+    },
+    "kind": "Stateful"
+}
